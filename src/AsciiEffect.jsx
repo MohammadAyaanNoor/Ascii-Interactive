@@ -79,27 +79,28 @@ import { Effects, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { AsciiShader } from './AsciiShader'; 
 
+const easeInOutCubic = (t) => {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+};
+
 export function AsciiEffect() {
   const passRef = useRef();
-  const { size } = useThree();
+  // 1. Destructure 'gl' to get access to the actual WebGL canvas
+  const { size, gl } = useThree();
   
-  const waveRef = useRef({ radius: 3.0 });
+  const waveProgress = useRef(1.0);
   const isColoredState = useRef(false);
 
-  // Load both your depth map and your character atlas sprite sheet
   const depthTexture = useTexture('/images/girl2.png');
-  const atlasTexture = useTexture('/images/atlas.png');
+  // const atlasTexture = useTexture('/images/atlas.png');
 
-  // Configure texture sampling to keep pixel art ultra-crisp
-  atlasTexture.minFilter = THREE.NearestFilter;
-  atlasTexture.magFilter = THREE.NearestFilter;
-  atlasTexture.generateMipmaps = false;
+  // atlasTexture.minFilter = THREE.NearestFilter;
+  // atlasTexture.magFilter = THREE.NearestFilter;
+  // atlasTexture.generateMipmaps = false;
 
-  // Inject both textures into the shader uniforms
   const shader = useMemo(() => {
     const customShader = { ...AsciiShader };
     customShader.uniforms.depthMap.value = depthTexture;
-    // customShader.uniforms.uTexture.value = atlasTexture;
     return customShader;
   }, [depthTexture]);
 
@@ -110,7 +111,7 @@ export function AsciiEffect() {
   }, [size]);
 
   useEffect(() => {
-    const handlePointerDown = () => {
+    const handlePointerDown = (event) => {
       if (!passRef.current) return;
 
       const currentMouse = passRef.current.uniforms.mouse.value;
@@ -118,25 +119,52 @@ export function AsciiEffect() {
       
       isColoredState.current = !isColoredState.current;
       passRef.current.uniforms.isColored.value = isColoredState.current ? 1.0 : 0.0;
-      waveRef.current.radius = 0.01; 
+      waveProgress.current = 0.0;
     };
 
-    window.addEventListener('pointerdown', handlePointerDown);
-    return () => window.removeEventListener('pointerdown', handlePointerDown);
-  }, []);
+    // 2. Attach the event specifically to the 3D canvas, NOT the global window
+    const canvas = gl.domElement;
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    
+    // 3. Cleanup the event listener properly
+    return () => canvas.removeEventListener('pointerdown', handlePointerDown);
+  }, [gl]); // Add 'gl' to the dependency array
 
   useFrame((state, delta) => {
     if (!passRef.current) return;
     
-    // passRef.current.uniforms.iTime.value = state.clock.elapsedTime;
+    passRef.current.uniforms.iTime.value = state.clock.elapsedTime;
     
-    const mx = (state.pointer.x + 1) / 2;
-    const my = (state.pointer.y + 1) / 2;
-    passRef.current.uniforms.mouse.value.set(mx, my);
+    // --- UPDATED: Smooth Mouse Lerping ---
+    // 1. Calculate where the mouse actually is (Target)
+    const targetX = (state.pointer.x + 1) / 2;
+    const targetY = (state.pointer.y + 1) / 2;
+    
+    // 2. Get current position of the shader's cursor
+    const currentMouse = passRef.current.uniforms.mouse.value;
 
-    if (waveRef.current.radius < 3.0) {
-      waveRef.current.radius += delta * 1.0; 
-      passRef.current.uniforms.waveRadius.value = waveRef.current.radius;
+    // 3. Smoothly interpolate (lerp) from current to target
+    // The "10 * delta" controls the speed. 
+    // Lower (e.g., 5 * delta) = slower/lazier follow. 
+    // Higher (e.g., 20 * delta) = faster/tighter follow.
+    currentMouse.x = THREE.MathUtils.lerp(currentMouse.x, targetX, 10 * delta);
+    currentMouse.y = THREE.MathUtils.lerp(currentMouse.y, targetY, 10 * delta);
+
+    if (waveProgress.current < 1.0) {
+      // 0.8 controls the speed. Lower = slower, Higher = faster
+      waveProgress.current += delta * 0.2; 
+      
+      // Clamp at 1.0 so it stops perfectly at the end
+      if (waveProgress.current > 1.0) {
+        waveProgress.current = 1.0;
+      }
+      
+      // Pass the linear progress into the easing function
+      const easedProgress = easeInOutCubic(waveProgress.current);
+      
+      // Multiply the eased value (0.0 to 1.0) by the MAX radius you want
+      const MAX_RADIUS = 1.0; // Adjust this if your wave needs to go further
+      passRef.current.uniforms.waveRadius.value = easedProgress * MAX_RADIUS;
     }
   });
 

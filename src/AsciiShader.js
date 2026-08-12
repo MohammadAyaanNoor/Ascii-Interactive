@@ -337,16 +337,16 @@ export const AsciiShader = {
     waveGlowColor: { value: new THREE.Color(0x0088ff) },
     
     mouse: { value: new THREE.Vector2(-1, -1) },
-    maskRadius: { value: 0.05 },
+    maskRadius: { value: 0.03 },
     clickPos: { value: new THREE.Vector2(0.5, 0.5) },
-    waveRadius: { value: 3.0 }, 
+    waveRadius: { value: 2.0 }, 
     isColored: { value: 0.0 },
     iTime: { value: 0.0 },
 
-    // NEW: Depth map uniforms
+    // Depth map uniforms
     depthMap: { value: null },
     enableParallax: { value: true },
-    parallaxIntensity: { value: 0.01 } // Tweak this for a stronger/weaker 3D pop
+    parallaxIntensity: { value: 0.01 }
   },
   
   vertexShader: `
@@ -370,12 +370,33 @@ export const AsciiShader = {
     uniform float isColored;
     uniform float iTime; 
     
-    // NEW: Declare depth uniforms
     uniform sampler2D depthMap;
     uniform bool enableParallax;
     uniform float parallaxIntensity;
 
     varying vec2 vUv;
+
+    // --- 2D Random & Noise Functions ---
+    float random(vec2 st) {
+        return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+    }
+
+    float noise(vec2 st) {
+        vec2 i = floor(st);
+        vec2 f = fract(st);
+
+        float a = random(i);
+        float b = random(i + vec2(1.0, 0.0));
+        float c = random(i + vec2(0.0, 1.0));
+        float d = random(i + vec2(1.0, 1.0));
+
+        vec2 u = f * f * (3.0 - 2.0 * f);
+
+        return mix(a, b, u.x) +
+                (c - a)* u.y * (1.0 - u.x) +
+                (d - b) * u.x * u.y;
+    }
+    // -----------------------------------------
 
     // Procedural character generator
     float character(int n, vec2 p) {
@@ -388,67 +409,42 @@ export const AsciiShader = {
         }
         return 0.0;
     }
-         // Returns the glyph int for a given brightness level [0,1].
-    // Ramp goes from sparse (space) to dense (solid block), 12 steps.
-    // Generated with the accompanying gen_glyphs.py script.
-    // int glyphForBrightness(float gray) {
-    //     // if (gray > 11.0 / 12.0) return 33554431;  // block   #####
-    //     if (gray > 10.0 / 12.0) return 15397950;  // @       .###./#.#.#/#.###/#..../.####
-    //     if (gray > 9.0  / 12.0) return 6593210;   // &
-    //     if (gray > 8.0  / 12.0) return 11512810;  // #
-    //     if (gray > 7.0  / 12.0) return 18092113;  // %
-    //     if (gray > 6.0  / 12.0) return 22511061;  // *
-    //     if (gray > 5.0  / 12.0) return 145536;    // +
-    //     if (gray > 4.0  / 12.0) return 459200;    // =
-    //     if (gray > 3.0  / 12.0) return 14336;     // -
-    //     if (gray > 2.0  / 12.0) return 131200;    // :
-    //     // if (gray > 1.0  / 12.0) return 4;         // .
-    //     return 0;                                  // space
-    // }
+
     int glyphForBrightness(float gray) {
-        // 23-step scale mapped to your exact characters: 
-        // B Z @ M W 8 X h j L V q d o m % & ? } ^ * f C
-        
-        if (gray > 22.0 / 23.0) return 6316310;  // C
-        if (gray > 21.0 / 23.0) return 9390146;  // f
-        if (gray > 20.0 / 23.0) return 459200;   // *
-        if (gray > 19.0 / 23.0) return 131200;   // ^
-        if (gray > 18.0 / 23.0) return 31710923; // }
-        if (gray > 17.0 / 23.0) return 11512810; // ?
-        if (gray > 16.0 / 23.0) return 6593210;  // &
-        if (gray > 15.0 / 23.0) return 18092113; // %
-        if (gray > 14.0 / 23.0) return 22511061; // m
-        if (gray > 13.0 / 23.0) return 16962834; // o
-        if (gray > 12.0 / 23.0) return 14826180; // d
-        if (gray > 11.0 / 23.0) return 11317424; // q
-        if (gray > 10.0 / 23.0) return 145536;   // V
-        if (gray > 9.0  / 23.0) return 14336;    // L
-        if (gray > 8.0  / 23.0) return 4;        // j
-        if (gray > 7.0  / 23.0) return 15397950; // h
-        if (gray > 6.0  / 23.0) return 14815374; // X
-        if (gray > 5.0  / 23.0) return 17318430; // 8
-        if (gray > 4.0  / 23.0) return 33059359; // W
-        if (gray > 3.0  / 23.0) return 8521864;  // M
-        if (gray > 2.0  / 23.0) return 15255086; // @
-        if (gray > 1.0  / 23.0) return 18667121; // Z
-        if (gray > 0.3  / 23.0) return 24192;    // B
-        
-        return 0;                                // space
+        if (gray > 22.0 / 23.0) return 6316310;  
+        if (gray > 21.0 / 23.0) return 9390146;  
+        if (gray > 20.0 / 23.0) return 459200;   
+        if (gray > 19.0 / 23.0) return 131200;   
+        if (gray > 18.0 / 23.0) return 31710923; 
+        if (gray > 17.0 / 23.0) return 11512810; 
+        if (gray > 16.0 / 23.0) return 6593210;  
+        if (gray > 15.0 / 23.0) return 18092113; 
+        if (gray > 14.0 / 23.0) return 22511061; 
+        if (gray > 13.0 / 23.0) return 16962834; 
+        if (gray > 12.0 / 23.0) return 14826180; 
+        if (gray > 11.0 / 23.0) return 11317424; 
+        if (gray > 10.0 / 23.0) return 145536;   
+        if (gray > 9.0  / 23.0) return 14336;    
+        if (gray > 8.0  / 23.0) return 4;        
+        if (gray > 7.0  / 23.0) return 15397950; 
+        if (gray > 6.0  / 23.0) return 14815374; 
+        if (gray > 5.0  / 23.0) return 17318430; 
+        if (gray > 4.0  / 23.0) return 33059359; 
+        if (gray > 3.0  / 23.0) return 8521864;  
+        if (gray > 2.0  / 23.0) return 15255086; 
+        if (gray > 1.0  / 23.0) return 18667121; 
+        if (gray > 0.3  / 23.0) return 24192;    
+        return 0;                                
     }
     
-
     void main() {
-        // --- NEW: PARALLAX LOGIC ---
         vec2 activeUv = vUv;
         if (enableParallax) {
             float depth = texture2D(depthMap, vUv).r;
-            // Center the mouse coordinate (-0.5 to 0.5) to shift the UVs
             vec2 offset = (mouse - vec2(0.5));
             activeUv += offset * depth * parallaxIntensity;
         }
-        // ---------------------------
 
-        // Calculate grid using the new activeUv
         vec2 pix = activeUv * iResolution.xy;
         vec2 pixelatedPix = floor(pix / cellSize) * cellSize;
         vec2 pixelatedUv = pixelatedPix / iResolution.xy;
@@ -456,25 +452,14 @@ export const AsciiShader = {
         vec4 texColor = texture2D(inputBuffer, pixelatedUv);
         float gray = 0.3 * texColor.r + 0.59 * texColor.g + 0.11 * texColor.b;
         
-        float animSpeed = 1.0; 
+        float animSpeed = 0.7; 
         float stepTime = floor(iTime * animSpeed);
         float cellHash = fract(sin(dot(pixelatedPix, vec2(12.9898, 78.233)) + stepTime) * 43758.5453);
         float animatedGray = gray + ((cellHash - 0.5) * 0.5 * gray);
 
-         int n = glyphForBrightness(animatedGray);                       
-        // if (animatedGray > 4.0 / 25.0) n = 4;        
-        // if (animatedGray > 5.0 / 25.0) n = 8521864;  
-        // if (animatedGray > 8.0 / 25.0) n = 17318430; 
-        // if (animatedGray > 9.0 / 25.0) n = 14815374; 
-        // if (animatedGray > 12.0 / 25.0) n = 15255086;
-        // if (animatedGray > 13.0 / 25.0) n = 18667121;
-        // if (animatedGray > 15.0 / 25.0) n = 33059359;
-       
+        int n = glyphForBrightness(animatedGray);                       
         
-       vec2 p = mod(pix / (cellSize / 2.0), 2.0) - vec2(1.0);
-        
-        // --- NEW: EXTRACT CHARACTER SHAPE ---
-        // Store the 0.0 or 1.0 value so we can mask the glow later
+        vec2 p = mod(pix / (cellSize / 2.0), 2.0) - vec2(1.0);
         float charShape = character(n, p);
         
         vec3 orangeAscii = asciiColor * charShape * (animatedGray * 1.5);
@@ -482,31 +467,63 @@ export const AsciiShader = {
         
         vec2 aspect = vec2(iResolution.x / iResolution.y, 1.0);
         
-        // 1. Calculate the wave distance and base mask
-        float waveDist = distance(activeUv * aspect, clickPos * aspect);
+        // --- UPDATED: Organic, uneven wave thickness ---
+        // 1. Calculate wave distance and direction
+        vec2 waveDelta = (activeUv - clickPos) * aspect;
+        float waveDist = length(waveDelta);
+        vec2 waveDir = normalize(waveDelta); 
+        
         float waveMask = 1.0 - smoothstep(waveRadius - 0.05, waveRadius, waveDist);
         
-        // 2. Isolate the exact geometric edge of the expanding wave
+        // 2. Generate noise around the circle to control thickness
+        // "waveDir * 6.0" dictates how many 'blobs' of thickness exist around the circle
+        // "iTime * 2.0" makes the thickness shift dynamically as it expands
+        float wNoise = noise(waveDir * 6.0 - iTime * 2.0);
+        
+        // 3. Modulate edge thickness using the noise
+        // Minimum thickness is 0.05, expands up to 0.35
+        float waveThickness = 0.05 + (wNoise * 0.1);
+        
         float edgeDist = abs(waveDist - waveRadius);
-        float glowMask = 1.0 - smoothstep(0.0, 0.06, edgeDist);
+        float glowMask = 1.0 - smoothstep(0.0, waveThickness, edgeDist);
         glowMask = pow(glowMask, 2.0);
+
+
+      //without glitch
+      // vec2 waveDelta = (activeUv - clickPos) * aspect;
+      //   float waveDist = length(waveDelta);
+        
+      //   float waveMask = 1.0 - smoothstep(waveRadius - 0.05, waveRadius, waveDist);
+        
+      //   // 2. FIX: Generate noise using SCREEN coordinates (activeUv) instead of the angle.
+      //   // "10.0" controls how large the cloudy blobs of thickness are
+      //   float wNoise = noise(activeUv * 10.0 - iTime * 2.0);
+        
+      //   // 3. Modulate edge thickness using the noise
+      //   float waveThickness = 0.05 + (wNoise * 0.5);
+        
+      //   float edgeDist = abs(waveDist - waveRadius);
+      //   float glowMask = 1.0 - smoothstep(0.0, waveThickness, edgeDist);
+      //   glowMask = pow(glowMask, 2.0);
+
+
+
+        // ------------------------------------------------
         
         float glowFade = 1.0 - smoothstep(1.5, 3.0, waveRadius);
         float finalGlow = glowMask * glowFade;
         
-        // 3. Logic for flipping colors
         float currentMode = mix(1.0 - isColored, isColored, waveMask);
         
-        // 4. Hover flashlight mask
         float hoverDist = distance(activeUv * aspect, mouse * aspect);
-        float hoverMask = 1.0 - smoothstep(maskRadius * 0.5, maskRadius, hoverDist);
+        float nNoise = noise(activeUv * 30.0 + iTime * 1.2); 
+        float dynamicRadius = maskRadius * (0.7 + 0.6 * nNoise); 
         
-        // 5. Smart blend the masks together
+        float hoverMask = 1.0 - smoothstep(dynamicRadius * 0.5, dynamicRadius, hoverDist);
+
         float finalMask = abs(currentMode - hoverMask);
         vec3 finalColor = mix(orangeAscii, originalColoredAscii, finalMask);
         
-        // --- NEW: MASKED ADDITIVE BLEND ---
-        // Multiply the blue light by 'charShape' so the empty black spaces stay pure black
         vec3 blueLight = vec3(0.0, 0.6, 1.0);
         finalColor += blueLight * finalGlow * 0.9 * charShape;
         

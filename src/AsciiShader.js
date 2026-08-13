@@ -482,7 +482,7 @@ export const AsciiShader = {
         
         // 3. Modulate edge thickness using the noise
         // Minimum thickness is 0.05, expands up to 0.35
-        float waveThickness = 0.05 + (wNoise * 0.1);
+        float waveThickness = 0.05 + (wNoise * 0.05);
         
         float edgeDist = abs(waveDist - waveRadius);
         float glowMask = 1.0 - smoothstep(0.0, waveThickness, edgeDist);

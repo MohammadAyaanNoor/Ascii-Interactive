@@ -8,42 +8,7 @@ body {
   height: 100%;
   width: 100%;
 }
-.text {
-  /* background-color: red; */
-  width: 70%;
-  height: 100%;
-  align-items: flex-start;
-  display: "flex";
-  flex-direction: "column";
-  padding: 2vw;
-  margin-top: 12vw;
-  line-height: 1.2;
-  position: relative;
-}
-.text h1{
-    color: white;
-    font-size:6vw;
-     font-family: helvetica;
-     font-weight:400;
-     opacity: 0;
-}
-.yellow {
-  background-color: orange;
-  width: 100%;
-  transform: scaleX(0);
-  height: 7vw;
-  position: absolute;
-  left: 0%;
 
-}
-.white {
-  background-color: white;
-  width: 100%;
-  height: 7vw;
-  position: absolute;
-  left: 0%;
-
-}
 .main-layout {
   display: flex;
   flex-direction: row; /* Side-by-side by default */
@@ -53,56 +18,82 @@ body {
   overflow: hidden;
 }
 
-/* .text {
+.text {
+  width: 60%; /* Adjusted to leave 50% for canvas, or change to 60/40 */
+  height: 100%;
+  align-items: flex-start;
+  display: flex;             /* FIXED: removed quotes */
+  flex-direction: column;    /* FIXED: removed quotes */
+  padding: 2vw;
+  margin-top: 12vw;
+  line-height: 1.2;
   position: relative;
-  width: 50%;
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Centers text vertically */
- /* }  */ 
+  z-index: 8;
+}
+
+.text h1 {
+  color: white;
+  font-size: 6vw;
+  font-family: helvetica;
+  font-weight: 400;
+  opacity: 0;
+}
+
+.yellow {
+  background-color: orange;
+  width: 100%;
+  height: 100%;       /* CHANGED: from 7vw to 100% */
+  position: absolute;
+  top: 0;             /* ADDED: ensures perfect vertical alignment */
+  left: 0;
+  transform: scaleX(0);
+}
+
+.white {
+  background-color: white;
+  width: 100%;
+  height: 100%;       /* CHANGED: from 7vw to 100% */
+  position: absolute;
+  top: 0;             /* ADDED: ensures perfect vertical alignment */
+  left: 0;
+}
 
 .canvas-container {
   position: relative;
-  width: 50%;
+  /* Tell flexbox to take up all the remaining space exactly */
+  flex: 1; 
   height: 100%;
-  
+  width: 40%;
+  z-index: 9;
 }
 
 /* =========================================
    MOBILE RESPONSIVENESS
    ========================================= */
 
-@media (max-width:1000px){
-    .main-layout {
+@media (max-width: 1000px) {
+  .main-layout {
     flex-direction: column; /* Stack vertically on mobile */
     align-items: center;
   }
 
+  .text {
+    width: 100vw;
+    margin-top: 20vw; /* Added some spacing for mobile */
+    height: auto;     /* Let text take only the height it needs */
+  }
+
+  .text h1 {
+    font-size: 10vw;
+  }
+
+ 
+
   .canvas-container {
     width: 100vw;
-    /* margin-top: -vw; */
-    height: 100vh; /* Give canvas bottom 60% of screen */
-    /* transform: scale(1.3); */
-    margin-bottom: 17vw;
-
+    /* Using flex: 1 here ensures the canvas perfectly fills the BOTTOM 
+       of the screen without overflowing or squishing */
+    flex: 1; 
+    height: auto; 
   }
-  
-    /* .container{
-        display: flex;
-        flex-direction: column;
-
-    } */
-    .text{
-        width: 100vw;
-    }
-    .text h1{
-        font-size: 10vw;
-    }
-    /* .canvas{
-        width: 100vw;
-        height: 100%;
-        position: relative;
-        /* height: 50vw; */
-    /* } */ 
 }

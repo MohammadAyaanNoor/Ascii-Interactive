@@ -82,7 +82,27 @@ import { AsciiShader } from './AsciiShader';
 const easeInOutCubic = (t) => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
+const easeOutCirc = (t) => {
+  return Math.sqrt(1 - Math.pow(t - 1, 2));
+};
+const easeOutBounce = (t) => {
+  const n1 = 7.5625;
+  const d1 = 2.75;
 
+  if (t < 1 / d1) {
+    return n1 * t * t;
+  } 
+   else {
+    const t2 = t - 2.625 / d1;
+    return n1 * t2 * t2 + 0.984375;
+  }
+};
+const easeInBounce = (t) => {
+  return 1 - easeOutBounce(1 - t);
+};
+const easeInCubic = (t) => {
+  return t * t * t;
+};
 export function AsciiEffect() {
   const passRef = useRef();
   // 1. Destructure 'gl' to get access to the actual WebGL canvas
@@ -152,7 +172,7 @@ export function AsciiEffect() {
 
     if (waveProgress.current < 1.0) {
       // 0.8 controls the speed. Lower = slower, Higher = faster
-      waveProgress.current += delta * 0.2; 
+      waveProgress.current += delta * 0.8; 
       
       // Clamp at 1.0 so it stops perfectly at the end
       if (waveProgress.current > 1.0) {
@@ -160,7 +180,7 @@ export function AsciiEffect() {
       }
       
       // Pass the linear progress into the easing function
-      const easedProgress = easeInOutCubic(waveProgress.current);
+      const easedProgress = easeInCubic(waveProgress.current);
       
       // Multiply the eased value (0.0 to 1.0) by the MAX radius you want
       const MAX_RADIUS = 1.0; // Adjust this if your wave needs to go further

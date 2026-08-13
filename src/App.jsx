@@ -102,7 +102,7 @@ import { Canvas } from '@react-three/fiber';
 import Experience from './Experience.jsx';
 import { NoToneMapping, SRGBColorSpace } from 'three';
 import { AsciiEffect } from './AsciiEffect.jsx';
-import { motion, useAnimate, stagger } from 'framer-motion';
+import { motion, useAnimate, stagger, cubicBezier, easeIn, easeInOut, easeOut } from 'framer-motion';
 
 function App() {
   const [scope, animate] = useAnimate();
@@ -111,16 +111,17 @@ function App() {
 
   useEffect(() => {
     // Both masks will take exactly 0.4 seconds to complete a movement
-    const ANIMATION_SPEED = 0.4;
+    const ANIMATION_SPEED = 0.2;
     const STAGGER_GAP = 0.2; // The delay between the first and second line of text
-
+    const easing = cubicBezier(.35,.17,.3,.86)
+    // const easing = easeOut
     // 1. YELLOW TIMELINE
     const runYellow = async () => {
       // Yellow Expands
       await animate(
         ".mask-yellow", 
         { scaleX: 1 }, 
-        { duration: ANIMATION_SPEED, ease: "easeInOut", delay: stagger(STAGGER_GAP) }
+        { duration: ANIMATION_SPEED, ease: easing, delay: stagger(STAGGER_GAP) }
       );
       
       // Instantly flip anchor
@@ -132,7 +133,7 @@ function App() {
        animate(
         ".mask-yellow", 
         { scaleX: 0 }, 
-        { duration: ANIMATION_SPEED, ease: "easeInOut", delay: stagger(0.1) }
+        { duration: ANIMATION_SPEED, ease: easing, delay: stagger(0.1) }
       );
     };
 
@@ -142,7 +143,7 @@ function App() {
       await animate(
         ".mask-white", 
         { scaleX: 1 }, 
-        { duration: ANIMATION_SPEED, ease: "easeInOut", delay: stagger(STAGGER_GAP, { startDelay: 0.1 }) }
+        { duration: ANIMATION_SPEED, ease: easing, delay: stagger(STAGGER_GAP, { startDelay: 0.1 }) }
       );
       
       // Instantly flip anchor
@@ -153,7 +154,7 @@ function App() {
       await animate(
         ".mask-white", 
         { scaleX: 0 }, 
-        { duration: ANIMATION_SPEED, ease: "easeInOut", delay: stagger(STAGGER_GAP) }
+        { duration: ANIMATION_SPEED, ease: easing, delay: stagger(STAGGER_GAP) }
       );
     };
 
@@ -161,8 +162,28 @@ function App() {
     runYellow();
     runWhite();
   }, [animate]);
+//  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 500);
+
+// const [isLowEndDevice] = useState(() => {
+//   const lowCores = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
+//   const lowMemory = typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4;
+  
+//   return lowCores || lowMemory;
+// });
+
+// useEffect(() => {
+//   const handleResize = () => {
+//     setIsMobile(window.innerWidth < 500);
+//   };
+
+//   window.addEventListener('resize', handleResize);
+//   return () => window.removeEventListener('resize', handleResize);
+// }, []);
 
   return (
+
+    
+    
    <div className='main-layout' style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#000' }}>
      
       <div ref={scope} className='text' >
@@ -203,7 +224,7 @@ function App() {
         </div>
 
       </div>
-
+    
        <div className='canvas-container'>
         <Canvas
         

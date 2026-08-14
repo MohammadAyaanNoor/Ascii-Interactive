@@ -103,6 +103,7 @@ import Experience from './Experience.jsx';
 import { NoToneMapping, SRGBColorSpace } from 'three';
 import { AsciiEffect } from './AsciiEffect.jsx';
 import { motion, useAnimate, stagger, cubicBezier, easeIn, easeInOut, easeOut } from 'framer-motion';
+import AsciiEffectComponent from './AsciiEffectComponent.jsx';
 
 function App() {
   const [scope, animate] = useAnimate();
@@ -180,70 +181,101 @@ function App() {
 //   return () => window.removeEventListener('resize', handleResize);
 // }, []);
 
-  return (
+  // return (
 
     
     
+  //  <div className='main-layout' style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#000' }}>
+     
+  //     <div ref={scope} className='text' >
+        
+  //       {/* First Line */}
+  //       <div style={{ position: 'relative', display: 'inline-block' }}>
+          
+  //         {/* ADDED initial PROP HERE: Guarantees they start invisible and anchored left instantly */}
+  //      <motion.div 
+  //           className="white mask-white" 
+  //           initial={{ scaleX: 0, transformOrigin: "left" }}
+  //         />
+  //         <motion.div 
+  //           className="yellow mask-yellow" 
+  //           initial={{ scaleX: 0, transformOrigin: "left" }}
+  //         />
+          
+  //         <motion.h1 className='firsth1' initial={{ opacity: 0 }}>The digital landmark</motion.h1>
+  //     </div>
+      
+        
+  //       <br />
+
+  //       {/* Second Line */}
+  //       <div style={{ position: 'relative', display: 'inline-block' }}>
+          
+  //         {/* ADDED initial PROP HERE */}
+  //         <motion.div 
+  //           className="white mask-white" 
+  //           initial={{ scaleX: 0, transformOrigin: "left" }}
+  //         />
+  //         <motion.div 
+  //           className="yellow mask-yellow" 
+  //           initial={{ scaleX: 0, transformOrigin: "left" }}
+  //         />
+          
+  //         <motion.h1 className='secondh1' initial={{ opacity: 0 }}>studio</motion.h1>
+  //       </div>
+
+  //     </div>
+    
+  //      <div className='canvas-container'>
+  //       <Canvas
+        
+  //         dpr={[1, 2]}
+  //         gl={{
+  //           antialias: true,
+  //           toneMapping: NoToneMapping,
+  //           outputColorSpace: SRGBColorSpace,
+  //           preserveDrawingBuffer: true,
+          
+  //         }}
+          
+  //         camera={{ fov: 45, near: 0.1, far: 200, position: [0, 0, 5] }}
+  //       >
+  //         <Suspense fallback={null}>
+  //           {/* <Experience />
+  //           <AsciiEffect /> */}
+  //           <AsciiEffectComponent/>
+  //         </Suspense>
+  //       </Canvas>
+  //     </div>
+  //   </div>
+  // )
+  return (
    <div className='main-layout' style={{ display: 'flex', width: '100vw', height: '100vh', backgroundColor: '#000' }}>
      
       <div ref={scope} className='text' >
-        
         {/* First Line */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          
-          {/* ADDED initial PROP HERE: Guarantees they start invisible and anchored left instantly */}
-       <motion.div 
-            className="white mask-white" 
-            initial={{ scaleX: 0, transformOrigin: "left" }}
-          />
-          <motion.div 
-            className="yellow mask-yellow" 
-            initial={{ scaleX: 0, transformOrigin: "left" }}
-          />
-          
+          <motion.div className="white mask-white" initial={{ scaleX: 0, transformOrigin: "left" }} />
+          <motion.div className="yellow mask-yellow" initial={{ scaleX: 0, transformOrigin: "left" }} />
           <motion.h1 className='firsth1' initial={{ opacity: 0 }}>The digital landmark</motion.h1>
-      </div>
+        </div>
       
-        
         <br />
 
         {/* Second Line */}
         <div style={{ position: 'relative', display: 'inline-block' }}>
-          
-          {/* ADDED initial PROP HERE */}
-          <motion.div 
-            className="white mask-white" 
-            initial={{ scaleX: 0, transformOrigin: "left" }}
-          />
-          <motion.div 
-            className="yellow mask-yellow" 
-            initial={{ scaleX: 0, transformOrigin: "left" }}
-          />
-          
+          <motion.div className="white mask-white" initial={{ scaleX: 0, transformOrigin: "left" }} />
+          <motion.div className="yellow mask-yellow" initial={{ scaleX: 0, transformOrigin: "left" }} />
           <motion.h1 className='secondh1' initial={{ opacity: 0 }}>studio</motion.h1>
         </div>
-
       </div>
     
        <div className='canvas-container'>
-        <Canvas
-        
-          dpr={[1, 2]}
-          gl={{
-            antialias: true,
-            toneMapping: NoToneMapping,
-            outputColorSpace: SRGBColorSpace,
-            preserveDrawingBuffer: true,
-          
-          }}
-          
-          camera={{ fov: 45, near: 0.1, far: 200, position: [0, 0, 5] }}
-        >
-          <Suspense fallback={null}>
-            <Experience />
-            <AsciiEffect />
-          </Suspense>
-        </Canvas>
+          {/* ✅ Just render the component directly. It already has a Canvas inside it! */}
+          <AsciiEffectComponent 
+          textureImage="/images/girl.png" 
+          depthMapImage="/images/girl2.png"
+          />
       </div>
     </div>
   )
